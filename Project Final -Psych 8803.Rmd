@@ -1,0 +1,246 @@
+---
+title: "Final Project 8803"
+author: "Kamala Natarajan"
+date: "2024-12-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r question 1}
+library(readr)
+library(dplyr)
+
+# Load the dataset from a CSV file
+data <- read_csv("C:/Users/kamal/Downloads/missing data final.csv")
+
+# Ensure 'data' is correctly loaded and is a dataframe
+print(class(data))
+
+# Calculating the missing data rates for each variable
+missing_data_summary <- data %>%
+  summarise(across(everything(), ~mean(is.na(.)))) %>%
+  t()  # Transpose for better display
+
+# Convert the transposed data to a dataframe for better readability
+missing_data_summary <- as.data.frame(missing_data_summary)
+colnames(missing_data_summary) <- c("Missing Rate")
+
+# Print the missing data summary
+print(missing_data_summary)
+
+
+
+
+```
+
+
+```{r Question 2}
+
+# Fit the linear model (disregard missing data)
+model <- lm(Vehicle ~ Approval + PHEV, data = na.omit(data))
+
+# Summarize the model to get coefficients and statistics
+summary(model)
+
+```
+
+
+```{r Question 3}
+library(dplyr)
+library(readr)
+library(lavaan)
+
+
+# Create a missing data indicator for 'Vehicle'
+data <- data %>% mutate(mis.vehicle = is.na(Vehicle))
+
+# Check the creation of the missing data indicator
+print(data %>% select(mis.vehicle))
+data <- data %>%
+  mutate(mis_Vehicle = ifelse(is.na(Vehicle), 1, 0))
+
+
+
+```
+
+
+```{r Question 3}
+library(dplyr)
+library(readr)
+library(lavaan)
+
+
+# Create a missing data indicator for 'Approval'
+data <- data %>% mutate(mis.Approval = is.na(Approval))
+
+# Check the creation of the missing data indicator
+print(data %>% select(mis.Approval))
+data <- data %>%
+  mutate(mis_Approval = ifelse(is.na(Approval), 1, 0))
+
+
+
+```
+
+
+
+```{r Question 3}
+
+# Define the SEM model using the newly created missing data indicator
+model_x <- '
+    BoxOffice  ~ mis_Vehicle
+    dn ~ mis_Vehicle
+    crt ~ mis_Vehicle
+    cfs ~ mis_Vehicle
+    vc ~ mis_Vehicle
+    age ~ mis_Vehicle
+'
+
+# Fit the model
+fit_x <- sem(model_x, data = data, fixed.x = TRUE, missing = "fiml")
+
+standardizedSolution(fit_x, type = "std.nox") %>%
+  filter(op == "~")
+
+
+```
+
+# For Vehicle: BoxOffice , dn, crt, cfs, vs all have a cohens'D > 0.2 based on the est.std column age does not have a cohen's D > 0.2.
+
+
+
+```{r Question 3}
+
+# Define the SEM model using the newly created missing data indicator
+model_x <- '
+    BoxOffice  ~ mis_Approval
+    dn ~ mis_Approval
+    crt ~ mis_Approval
+    cfs ~ mis_Approval
+    vc ~ mis_Approval
+    age ~ mis_Approval
+'
+
+# Fit the model
+fit_x <- sem(model_x, data = data, fixed.x = TRUE, missing = "fiml")
+
+standardizedSolution(fit_x, type = "std.nox") %>%
+  filter(op == "~")
+
+
+
+
+```
+# For Approval: BoxOffice , dn, crt, cfs, vs all have a cohens'D > 0.2 based on the est.std column. Age does not have a cohen's D > 0.2.
+
+
+
+```{r q3}
+library(lavaan)
+library(semTools)
+model_x_resid_unaccounted <- 'Vehicle ~ Approval + PHEV'
+auxvar <- c("dn","crt","cfs","vc", "age", "BoxOffice")
+fit_x_resid_unaccounted <- sem.auxiliary(model_x_resid_unaccounted, data, fixed.x = TRUE, missing = "fiml", aux= auxvar)
+summary(fit_x_resid_unaccounted, rsquare= T, standardize = T)
+```
+
+
+
+
+```{r q4}
+library(brms)
+
+# Define the Bayesian formula with multiple sub-models
+bform2 <- bf(BoxOffice | mi() ~ mi(Approval) +
+                  mi(Vehicle) + mi(dn) + mi(crt) + mi(cfs) + mi(vc)  +
+                  PHEV) + 
+  bf(dn | mi() ~ mi(Approval) + mi(Vehicle) + mi(crt) + mi(cfs) + mi(vc)  +
+                 PHEV) +  
+  bf(crt | mi() ~ mi(cfs) + mi(vc) + mi(Approval) + mi(Vehicle) + PHEV) +  
+  bf(cfs | mi() ~ mi(vc) + mi(Approval) + mi(Vehicle) + PHEV) +  
+  bf(vc | mi() ~  mi(Approval) + mi(Vehicle)  + PHEV) +  
+  bf(Vehicle | mi() ~ mi(Approval) + PHEV) +  
+  bf(Approval | mi() ~ PHEV) +  
+  set_rescor(FALSE)
+
+brm2 <- brm(bform2, data, 
+             family = gaussian(),  
+             chains = 4,           
+             iter = 500,        
+             seed = 123) 
+            
+
+# Check summary of the model
+summary(brm2)
+```
+
+```{r q5}
+plot(brm2)
+
+```
+```{r q5}
+# Load necessary libraries
+library(lavaan)
+library(semTools)
+# Define the model
+maxl_model <- 'Vehicle ~ b1*Approval + b2*PHEV'
+aux <-c("BoxOffice", "dn", "crt", "cfs", "vc")
+
+# Fit the model with auxiliary variables
+fit_model <- sem.auxiliary(maxl_model, data = data, aux, missing = "fiml", fixed.x = FALSE)
+
+# Summary of the fitted model
+summary(fit_model, rsquare = TRUE, standardized = TRUE)
+
+
+```
+
+
+
+```{r q5}
+library(rblimp)
+datarblimp <- read_csv("C:/Users/kamal/Downloads/missing data final.csv")
+
+blocksversion <- rblimp(
+  data = datarblimp,
+  fixed = 'PHEV', 
+  ordinal = '',
+  model = '
+    focal.model:
+      Vehicle ~ Approval PHEV;  
+
+    aux.models:
+      dn ~ Approval PHEV  Vehicle;  
+      crt ~ Approval PHEV Vehicle; 
+      cfs ~ Approval PHEV Vehicle;  
+      vc ~ Approval PHEV Vehicle;  
+      age ~ Approval PHEV Vehicle;  
+
+    predictor.model:
+      Approval ~ PHEV;
+  ',
+  seed = 53232,  # Seed for reproducibility
+  burn = 1000,  # Number of burn-in iterations
+  chains = 2,  # Number of MCMC chains
+  iter = 10000  # Number of iterations per chain
+)
+
+
+summary(blocksversion)
+
+
+
+
+```
+
+
+

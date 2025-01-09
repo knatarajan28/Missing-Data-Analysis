@@ -1,0 +1,12 @@
+DATA: missing data final.dat;
+VARIABLES: id Approval PHEV Vehicle BoxOffice dn crt cfs vc age;
+MISSING: NA; 
+FIXED: PHEV;
+MODEL: 
+     focal.model: Vehicle ~ Approval PHEV; 
+     predictor.model: Approval ~ PHEV; 
+     auxilliary.variable.models: dn ~ Vehicle Approval PHEV; 
+     missingness.model: Vehicle.missing ~ Vehicle ;
+SEED: 90291; 
+BURN: 1000; 
+ITERATIONS: 10000;

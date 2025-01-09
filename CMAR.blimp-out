@@ -1,0 +1,209 @@
+
+---------------------------------------------------------------------------
+
+                                   Blimp
+                                  3.2.12
+
+             Blimp was developed with funding from Institute of
+           Education Sciences awards R305D150056 and R305D190002.
+
+            Craig K. Enders, P.I. Email: cenders@psych.ucla.edu
+           Brian T. Keller, Co-P.I. Email: btkeller@missouri.edu
+                 Han Du, Co-P.I. Email: hdu@psych.ucla.edu
+                 Roy Levy, Co-P.I. Email: roy.levy@asu.edu
+
+              Programming and Blimp Studio by Brian T. Keller
+
+                   There is no expressed license given.
+
+---------------------------------------------------------------------------
+
+
+ALGORITHMIC OPTIONS SPECIFIED:
+
+  Imputation method:                 Fully Bayesian model-based
+  MCMC algorithm:                    Full conditional Metropolis sampler with
+                                       Auto-Derived Conditional Distributions
+  Between-cluster imputation model:  Not applicable, single-level imputation
+  Prior for random effect variances: Not applicable, single-level imputation
+  Prior for residual variances:      Zero sum of squares, df = -2 (PRIOR2)
+  Prior for predictor variances:     Unit sum of squares, df = 2 (XPRIOR1)
+  Chain Starting Values:             Random starting values
+
+
+
+BURN-IN POTENTIAL SCALE REDUCTION (PSR) OUTPUT:
+
+  NOTE: Split chain PSR is being used. This splits each chain's
+        iterations to create twice as many chains.
+
+  Comparing iterations across 2 chains     Highest PSR   Parameter #  
+                           26 to 50              1.278             5  
+                           51 to 100             1.057            14  
+                           76 to 150             1.068            10  
+                          101 to 200             1.032            10  
+                          126 to 250             1.038            10  
+                          151 to 300             1.040            20  
+                          176 to 350             1.019             1  
+                          201 to 400             1.015             9  
+                          226 to 450             1.010             2  
+                          251 to 500             1.017            11  
+                          276 to 550             1.013             5  
+                          301 to 600             1.009            14  
+                          326 to 650             1.011            16  
+                          351 to 700             1.008            16  
+                          376 to 750             1.011             4  
+                          401 to 800             1.015            14  
+                          426 to 850             1.009            19  
+                          451 to 900             1.008             5  
+                          476 to 950             1.006             5  
+                          501 to 1000            1.004            16  
+
+
+DATA INFORMATION:
+
+  Sample Size:              1147
+  Missing Data Rates:
+
+                  Vehicle = 17.00
+                 Approval = 12.12
+                       dn = 01.13
+
+
+
+MODEL INFORMATION:
+
+  NUMBER OF PARAMETERS
+    Outcome Models:         12
+    Predictor Models:       0
+
+  PREDICTORS
+    Fixed variables:        PHEV
+
+  MODELS
+
+   focal.model:
+    [1]  Vehicle ~ Intercept Approval PHEV
+
+   predictor.model:
+    [2]  Approval ~ Intercept PHEV
+
+   auxilliary.variable.models:
+    [3]  dn ~ Intercept Vehicle Approval PHEV
+
+
+WARNING MESSAGES:
+
+  No warning messages.
+
+
+MODEL FIT:
+
+
+  INFORMATION CRITERIA
+
+    Marginal Likelihood
+      DIC2                  9742.174
+      WAIC                  9876.372
+
+    Conditional Likelihood
+      DIC2                  9742.174
+      WAIC                  9876.372
+
+
+CORRELATIONS AMONG RESIDUALS:
+
+  Summaries based on 10000 iterations using 2 chains.
+
+
+Correlations                         Median     StdDev       2.5%      97.5%      ChiSq     PValue      N_Eff 
+                                ------------------------------------------------------------------------------
+
+  Vehicle, Approval                   0.000      0.042     -0.084      0.082      0.000      0.998   9831.660 
+  Vehicle, dn                         0.000      0.042     -0.083      0.081      0.000      0.999   9775.104 
+  Approval, dn                        0.000      0.042     -0.081      0.083      0.000      0.992   9025.293 
+
+                                ------------------------------------------------------------------------------
+
+
+
+OUTCOME MODEL ESTIMATES:
+
+  Summaries based on 10000 iterations using 2 chains.
+
+  focal.model block:
+
+Outcome Variable:  Vehicle    
+
+Parameters                           Median     StdDev       2.5%      97.5%      ChiSq     PValue      N_Eff 
+                                ------------------------------------------------------------------------------
+Variances:                      
+  Residual Var.                       0.870      0.041      0.794      0.956        ---        ---   5414.666 
+
+Coefficients:                   
+  Intercept                          -0.023      0.031     -0.084      0.038      0.578      0.447   6321.013 
+  Approval                            0.293      0.030      0.233      0.351     95.013      0.000   3847.770 
+  PHEV                                0.075      0.027      0.022      0.128      7.606      0.006   6527.692 
+
+Standardized Coefficients:      
+  Approval                            0.352      0.034      0.283      0.417    108.079      0.000   3501.475 
+  PHEV                                0.085      0.031      0.025      0.144      7.698      0.006   6524.090 
+
+Proportion Variance Explained   
+  by Coefficients                     0.137      0.024      0.091      0.188        ---        ---   3514.301 
+  by Residual Variation               0.863      0.024      0.812      0.909        ---        ---   3514.301 
+
+                                ------------------------------------------------------------------------------
+
+
+  predictor.model block:
+
+Outcome Variable:  Approval   
+
+Parameters                           Median     StdDev       2.5%      97.5%      ChiSq     PValue      N_Eff 
+                                ------------------------------------------------------------------------------
+Variances:                      
+  Residual Var.                       1.460      0.067      1.336      1.600        ---        ---   6898.597 
+
+Coefficients:                   
+  Intercept                           0.197      0.038      0.124      0.271     27.363      0.000   7582.459 
+  PHEV                                0.079      0.033      0.014      0.144      5.662      0.017   7457.398 
+
+Standardized Coefficients:      
+  PHEV                                0.075      0.031      0.013      0.135      5.720      0.017   7552.018 
+
+Proportion Variance Explained   
+  by Coefficients                     0.006      0.005      0.000      0.018        ---        ---   7628.698 
+  by Residual Variation               0.994      0.005      0.982      1.000        ---        ---   7628.698 
+
+                                ------------------------------------------------------------------------------
+
+
+  auxilliary.variable.models block:
+
+Outcome Variable:  dn         
+
+Parameters                           Median     StdDev       2.5%      97.5%      ChiSq     PValue      N_Eff 
+                                ------------------------------------------------------------------------------
+Variances:                      
+  Residual Var.                       0.694      0.030      0.639      0.755        ---        ---   8625.570 
+
+Coefficients:                   
+  Intercept                           0.033      0.025     -0.017      0.082      1.730      0.188   8377.825 
+  Vehicle                            -0.143      0.030     -0.201     -0.085     22.987      0.000   6013.046 
+  Approval                           -0.263      0.024     -0.308     -0.216    124.209      0.000   7637.697 
+  PHEV                               -0.064      0.022     -0.106     -0.020      8.380      0.004   9104.955 
+
+Standardized Coefficients:      
+  Vehicle                            -0.155      0.032     -0.216     -0.092     23.670      0.000   5985.628 
+  Approval                           -0.342      0.029     -0.396     -0.284    140.762      0.000   7331.434 
+  PHEV                               -0.079      0.027     -0.131     -0.025      8.445      0.004   9120.283 
+
+Proportion Variance Explained   
+  by Coefficients                     0.194      0.021      0.152      0.236        ---        ---   7801.977 
+  by Residual Variation               0.806      0.021      0.764      0.848        ---        ---   7801.977 
+
+                                ------------------------------------------------------------------------------
+
+
+
