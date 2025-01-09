@@ -1,0 +1,274 @@
+---
+title: "Final Project - PSYCH 8803 Missing Data Analytics"
+author: "Meenakshi_Somadasan"
+date: "2024-12-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE)
+```
+
+1. Introduction
+
+The objective of this study is to explore advanced methods for handling missing data in a dataset focused on vehicle preferences and associated variables. Missing data can bias results and reduce statistical power if not properly addressed. This analysis investigates methods to handle missing data under different mechanisms, such as Missing Completely at Random (MCAR), Missing at Random (MAR), and Missing Not at Random (MNAR). The methods employed include Complete Case Analysis, Maximum Likelihood Estimation (MLE), Bayesian Inference, and Pattern Mixture Models (PMM). Special emphasis is placed on the role of auxiliary variables in improving bias and precision.
+
+The analysis is structured as follows:
+
+Classification of auxiliary variables based on their relationships with missing indicators and outcomes.
+
+Evaluation of the impact of auxiliary variables on mitigating bias in Complete Case and CMAR analyses.
+
+Sensitivity analysis using PMM to explore MNAR mechanisms. 
+
+```{r load-packages, echo=FALSE, message=FALSE}
+library(dplyr)
+library(mice)
+library(lavaan)
+library(semTools)
+library(ggplot2)
+library(cowplot)
+library(brms)
+```
+
+The dataset comprises the following variables:
+
+Vehicle (dependent variable): Reflects preferences for vehicles.
+
+Approval and PHEV (predictors): Capture individual and product-level features.
+
+Auxiliary Variables: dn, crt, cfs, vc, and age.
+
+BoxOffice: Explored as a potential auxiliary variable for Approval-focused analyses. 
+```{r missing-rate, echo = FALSE}
+data <- read.csv("missing data final.csv")
+
+missing_data_summary <- data %>%
+  summarise(across(everything(), ~ mean(is.na(.))))
+
+print(missing_data_summary)
+```
+
+
+```{r plot-missingrate, echo=FALSE, message=FALSE}
+missing_data_summary <- data.frame(
+  Variable = names(data),
+  MissingRate = sapply(data, function(x) mean(is.na(x))) * 100
+)
+
+# Visualize missing data rates
+ggplot(missing_data_summary, aes(x = reorder(Variable, MissingRate), y = MissingRate)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Missing Data Rates by Variable",
+    x = "Variable",
+    y = "Missing Data Rate (%)"
+  ) +
+  theme_minimal()
+```
+
+Vehicle and Approval exhibited the highest missing data rates.
+
+Auxiliary variables had lower missing rates, making them suitable candidates for bias mitigation.
+
+By using cohen's d values and semi partial correlation modelling we can determine the category to which the auxilliary variables belong to. 
+
+
+A baseline analysis conducted using ordinary least squares (OLS) regression with complete data.
+
+```{r complete-model, echo=FALSE, message=FALSE}
+complete_data <- na.omit(data)
+lm_model <- lm(Vehicle ~ Approval + PHEV, data = complete_data)
+summary(lm_model)
+```
+
+This complete model helps us see that, Approval significantly impacted Vehicle preferences (Estimate = 0.235, p < 0.001). PHEV did not show a significant effect (p = 0.19). R-squared: 0.0863 (Adjusted R-squared = 0.08406).
+
+```{r aux-category-cohend, echo=FALSE, message=FALSE}
+data$v.miss <- ifelse(is.na(data$Vehicle), 1, 0)
+data$phev.miss <- ifelse(is.na(data$PHEV), 1, 0)
+data$app.miss <- ifelse(is.na(data$Approval), 1, 0)
+
+v_model_mis <- '
+BoxOffice ~ v.miss
+dn ~ v.miss
+crt ~ v.miss
+cfs ~ v.miss
+vc ~ v.miss
+age ~ v.miss
+'
+
+p_model_mis <- '
+BoxOffice ~ phev.miss
+dn ~ phev.miss
+crt ~ phev.miss
+cfs ~ phev.miss
+vc ~ phev.miss
+age ~ phev.miss
+'
+
+a_model_mis <- '
+BoxOffice ~ app.miss
+dn ~ app.miss
+crt ~ app.miss
+cfs ~ app.miss
+vc ~ app.miss
+age ~ app.miss
+'
+
+v_fit_mis <- sem(v_model_mis, data = data, missing = "fiml")
+v_cohen_d <- standardizedSolution(v_fit_mis, type = "std.nox")
+
+
+a_fit_mis <- sem(a_model_mis, data = data, missing = "fiml")
+a_cohen_d <- standardizedSolution(a_fit_mis, type = "std.nox")
+
+```
+
+The cohen d values from this step can be summarized as follows: 
+```{r v_cohen}
+print(v_cohen_d)
+```
+
+
+
+```{r a_cohen}
+print(a_cohen_d)
+```
+
+
+```{r aux-cat-semipart, echo=FALSE, message=FALSE}
+aux_vars <- c("BoxOffice","dn","crt", "cfs", "vc", "age")
+substantive_model <- 'Vehicle ~ Approval + PHEV'
+fit_aux <- sem.auxiliary(substantive_model, data = data, fixed.x = FALSE, aux = aux_vars)
+summary(fit_aux, rsquare = TRUE, standardize = TRUE)
+
+```
+
+Therefore, we can conclude that 
+
+1. **BoxOffice**
+   - **Cohen’s d (v.miss)**: 0.382
+   - **Cohen’s d (app.miss)**: 0.630
+   - **std.all (Vehicle)**: 0.107
+   - **Classification**: **Category B** (Correlated with both missing indicators and Vehicle).
+
+2. **dn**
+   - **Cohen’s d (v.miss)**: -0.635
+   - **Cohen’s d (app.miss)**: -0.701
+   - **std.all (Vehicle)**: -0.144
+   - **Classification**: **Category B** (Correlated with both missing indicators and Vehicle).
+
+3. **crt**
+   - **Cohen’s d (v.miss)**: -0.594
+   - **Cohen’s d (app.miss)**: -0.630
+   - **std.all (Vehicle)**: -0.186
+   - **Classification**: **Category B** (Correlated with both missing indicators and Vehicle).
+
+4. **cfs**
+   - **Cohen’s d (v.miss)**: -0.619
+   - **Cohen’s d (app.miss)**: -0.647
+   - **std.all (Vehicle)**: -0.118
+   - **Classification**: **Category B** (Correlated with both missing indicators and Vehicle).
+
+5. **vc**
+   - **Cohen’s d (v.miss)**: -0.489
+   - **Cohen’s d (app.miss)**: -0.657
+   - **std.all (Vehicle)**: -0.097
+   - **Classification**: **Category B** (Correlated with both missing indicators and Vehicle).
+
+6. **age**
+   - **Cohen’s d (v.miss)**: 0.078
+   - **Cohen’s d (app.miss)**: 0.097
+   - **std.all (Vehicle)**: 0.081
+   - **Classification**: **Category C** (Weakly correlated with missing indicators but moderately correlated with Vehicle).
+
+---
+
+### **Summary of Classifications**
+- **Category B**: BoxOffice, dn, crt, cfs, vc
+- **Category C**: age
+
+
+   
+
+#### Variables to Exclude:
+1. **`age`**:
+   - Weak Cohen's \( d \) and no significant semi-partial correlation.
+   - No substantial contribution to bias or precision improvement.
+   - **Reason**: Category C.
+
+### **For CMAR Analyses**
+1. **Include variables**: `dn`, `crt`, `cfs`, `vc` in the CMAR analyses to mitigate bias and improve power.  These variables fall under Category B, indicating strong correlations with both the missing data indicators and the outcome (Vehicle).
+2. **Exclude variables**: `age` due to negligible impact.
+3. **Potentially use**: `BoxOffice` for `Approval`-related analyses if precision needs to be maximized.
+
+
+```{r maximum-likelihood}
+primary_model <- 'Vehicle ~ b1*Approval + b2*PHEV'
+
+# Fit the model using FIML
+primary_fit <- sem(primary_model, data = data, missing = "fiml", fixed.x = FALSE)
+
+# Summary of results
+summary(primary_fit, rsquare = TRUE, standardize = TRUE)
+```
+
+
+```{r bayesian}
+model_formula <- 
+  bf(Vehicle ~ mi(Approval) + PHEV + mi(BoxOffice)) +
+  bf(Approval | mi() ~ 1) +
+  bf(BoxOffice | mi() ~ 1) +
+  set_rescor(FALSE)
+
+bayesian_fit <- brm(
+  model_formula,
+  data = data,
+  family = gaussian(),
+  chains = 4,
+  iter = 2000,
+  control = list(adapt_delta = 0.95)
+) 
+
+# Summarize the Bayesian results
+summary(bayesian_fit)
+
+# Trace plots for MCMC convergence diagnostics
+plot(bayesian_fit)
+```
+
+```{r pmm}
+
+data <- data %>%
+  mutate(Vehicle_missing = ifelse(is.na(Vehicle), 1, 0))
+observed_data <- data %>% filter(Vehicle_missing == 0)
+missing_data <- data %>% filter(Vehicle_missing == 1)
+
+pmm_model <- 'Vehicle ~ Approval + PHEV + dn + crt + cfs + vc'
+
+
+deltas <- seq(-1, 1, by = 0.2)  
+
+
+fit_pmm_models <- lapply(deltas, function(delta) {
+  adjusted_data <- data
+  adjusted_data$Vehicle[is.na(adjusted_data$Vehicle)] <- delta
+  
+  
+  sem(model = pmm_model, data = adjusted_data, missing = "fiml", fixed.x = FALSE)
+})
+
+```
+
+
+```{r pmm_summary}
+pmm_summaries <- lapply(fit_pmm_models, function(fit) {
+  summary(fit, rsquare = TRUE, standardize = TRUE)
+})
+
+print(pmm_summaries[[1]])
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
