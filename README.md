@@ -1,13 +1,13 @@
 # Missing-Data-Analysis
 
-#Objective and Methods
+# Objective and Methods
 
 -Aimed to explore advanced methods for handling missing data in a dataset focused on forecasting.
 
 -Investigated methods under Completely Missing at Random (CMAR) and Missing Not at Random (MNAR) mechanisms, including Maximum Likelihood Estimation (MLE), Bayesian Inference, and Selection Models.
 
 -Emphasized the role of auxiliary variables in improving bias and precision.
-# Missing Data Analysis
+
 -Documented the missing data rates for each variable, noting that PHEV had no missing values while other variables varied.
 # Regression Analysis Without Missing Data
 -Found a significant positive relationship between presidential approval ratings (Approval) and autonomous vehicle collisions (Vehicle), with a p-value < 0.001.
