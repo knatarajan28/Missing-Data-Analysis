@@ -31,6 +31,13 @@
 
 -MCMC methods showed good convergence with trace plots indicating stable and consistent sampling, with chains exhibiting good mixing and stable fluctuations around a mean value.
 
+# MNAR Analysis
+-Estimated both focused and diffuse selection models for the missingness on the "Vehicle" variable.
+
+-In the focused model, I included a limited set of predictors for missingness, typically one or a few key variables that I hypothesized may directly influence whether Vehicle data was missing.
+
+-The diffuse model incorporated a broader range of variables to account for missingness, perhaps reflecting a more complex interaction between observed and unobserved factors.
+
 # Comparison of CMAR and MNAR Models
 -CMAR models consistently showed a strong positive effect of Approval on Vehicle and a more significant effect of PHEV than simple linear regression.
 
